@@ -21,7 +21,7 @@ exports.getBootcamps = asyncHandler(async (req,res,next) => {
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g,match => `$${match}`);
     console.log(queryStr);
     // Finding resource
-    query = Bootcamp.find(JSON.parse(queryStr));
+    query = Bootcamp.find(JSON.parse(queryStr)).populate('courses');
     // Select fields
     if(req.query.select){
         const fields = req.query.select.split(',').join(' ');
@@ -34,7 +34,7 @@ exports.getBootcamps = asyncHandler(async (req,res,next) => {
         console.log(sortBy);
         query = query.sort(sortBy);
     }else{
-        const sortBy = req.params.sort('-createdAt');
+        query = query.sort('-createdAt');
     }
     // Pagination
     const page = parseInt(req.query.page,10) || 1;
@@ -145,16 +145,17 @@ exports.updateBootcamp = asyncHandler(async(req,res,next) =>{
     //}
 });
 // @desc delete bootcamp
-// @route DELETE /api/v1/bootcamps
+// @route DELETE /api/v1/bootcamps/:id
 // @access private
 exports.deleteBootcamp =asyncHandler(async (req,res,next) =>{
   //  res.status(200).json({success : true , msg : `delete all the bootcamps at ${req.params.id}`});
  // try {
-    const bootcamps = await Bootcamp.findByIdAndDelete(req.params.id);
+    const bootcamps = await Bootcamp.findById(req.params.id);
     if(!bootcamps){
        // return res.status(400).json({success : false}); 
        return  ErrorResponse(`Bootcamp not found with id of ${req.params.id}`,404);
     }
+    bootcamp.remove();
     res.status(200).json({
         success : true,
         data : {}

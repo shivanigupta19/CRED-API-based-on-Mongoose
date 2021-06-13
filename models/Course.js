@@ -39,12 +39,13 @@ const CourseSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.ObjectId,
     ref: 'User',
-    required: true
+    required: false
   }
 });
 
 // Static method to get avg of course tuitions
 CourseSchema.statics.getAverageCost = async function(bootcampId) {
+  console.log(`Calculating average cost ....`.blue);
   const obj = await this.aggregate([
     {
       $match: { bootcamp: bootcampId }
@@ -56,6 +57,7 @@ CourseSchema.statics.getAverageCost = async function(bootcampId) {
       }
     }
   ]);
+  console.log(obj);
 
   try {
  if (obj[0]) {
@@ -81,3 +83,5 @@ CourseSchema.post('save', async function() {
 CourseSchema.post('remove', async function () {
   await this.constructor.getAverageCost(this.bootcamp);
 });
+
+module.exports = mongoose.model('Course', CourseSchema);
